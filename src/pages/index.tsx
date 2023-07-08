@@ -6,7 +6,9 @@ export default function Home() {
   const { data: session } = useSession();
 
   useEffect(() => {
+    document.body.classList.add("__next-auth-theme-auto");
     if (session === undefined) return;
+    console.log(session);
 
     if (!session) {
       signIn();
@@ -34,19 +36,38 @@ export default function Home() {
         <title>Oauth Service</title>
       </Head>
 
-      {session ? (
-        <>
-          {" "}
-          Signed in as {session.user?.email} <br />
-          <button onClick={() => signOut()}>Sign out</button>
-          <button onClick={() => confirmOAuthLogin()}>Continue</button>
-        </>
-      ) : (
-        <>
-          Not signed in <br />
-          <button onClick={() => signIn()}>Sign in</button>
-        </>
-      )}
+      <div className="page">
+        <div className="signin">
+          <div className="card">
+            {session ? (
+              <>
+                <h1 style={{ fontSize: "1.7em" }}>
+                  You are signed in as {session.user?.email}
+                </h1>{" "}
+                <br />
+                <button
+                  onClick={() => confirmOAuthLogin()}
+                  style={{
+                    //@ts-ignore-next-line
+                    "--provider-bg": "#fff",
+                    "--provider-dark-bg": "#006aff",
+                    "--provider-color": "#006aff",
+                    "--provider-dark-color": "#fff",
+                  }}
+                >
+                  Continue
+                </button>
+                <button onClick={() => signOut()}>Sign out</button>
+              </>
+            ) : (
+              <>
+                Not signed in <br />
+                <button onClick={() => signIn()}>Sign in</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 }
