@@ -3,15 +3,23 @@ import Head from "next/head";
 import { useEffect } from "react";
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session }: { data: any } = useSession();
 
   useEffect(() => {
     document.body.classList.add("__next-auth-theme-auto");
+
     if (session === undefined) return;
-    console.log(session);
+
+    const params: URLSearchParams = new URLSearchParams(window.location.search);
+    const provider: string | null = params.get("provider");
 
     if (!session) {
-      signIn();
+      signIn(provider as string);
+    }
+
+    // Logout and redirect to the same page if the user is already logged in with a different provider than the requested one
+    if (session && provider && provider != session.user.provider) {
+      signOut({ redirect: false, callbackUrl: `/?provider=${provider}` });
     }
   }, [session]);
 
@@ -42,7 +50,10 @@ export default function Home() {
             {session ? (
               <>
                 <h1 style={{ fontSize: "1.7em" }}>
-                  You are signed in as {session.user?.email}
+                  You are signed in as {session.user?.email} in{" "}
+                  <span style={{ textTransform: "capitalize" }}>
+                    {session.user?.provider}
+                  </span>
                 </h1>{" "}
                 <br />
                 <button
