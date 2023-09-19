@@ -72,7 +72,7 @@ export default function Home() {
               </>
             ) : (
               <>
-                Not signed in <br />
+                <h1 style={{ fontSize: "1.7em" }}>Not signed in</h1>{" "}
                 <button onClick={() => signIn()}>Sign in</button>
               </>
             )}
