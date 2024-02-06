@@ -13,7 +13,10 @@ export default async function handler(
   }
 
   const seed = ethers.hashMessage(
-    (JSON.stringify(session.user) + process.env.NEXT_AUTH_SEED) as string,
+    (JSON.stringify({
+      id: session.user.id,
+      provider: session.user.provider,
+    }) + process.env.NEXT_AUTH_SEED) as string,
   );
 
   res.status(200).json({ seed });
