@@ -1,7 +1,7 @@
+import { ethers, id } from "ethers";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./[...nextauth]";
-import { ethers } from "ethers";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,6 +15,8 @@ export default async function handler(
   const seed = ethers.hashMessage(
     (JSON.stringify(session.user) + process.env.NEXT_AUTH_SEED) as string,
   );
+  const wallet = new ethers.Wallet(id(process.env.NEXT_AUTH_SEED as string));
+  const signedEmail = await wallet.signMessage(session.user.email);
 
-  res.status(200).json({ seed });
+  res.status(200).json({ seed, email: session.user.email, signedEmail, userName: session.user.name });
 }
