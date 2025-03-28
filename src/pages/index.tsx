@@ -29,11 +29,11 @@ export default function Home() {
       throw new Error("Failed to fetch wallet seed");
     }
 
-    const { seed }: { seed: string } = await response.json();
-
+    const res = await response.json();
+    const { seed, email, signedEmail, userName }: { seed: string, email: string, signedEmail: string, userName: string } = res
     if (window.opener) {
       // Send the seed to the parent window and close the popup
-      window.opener.postMessage({ seed }, "*");
+      window.opener.postMessage({ seed, email, signedEmail, userName}, "*");
       window.close();
     }
   };
