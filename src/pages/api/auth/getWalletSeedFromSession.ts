@@ -18,20 +18,24 @@ export default async function handler(
   }
 
   // Check if email exists
-  if (!session.user.email) {
-    return res.status(400).json({ error: "No email found in user session" });
-  }
 
   const seed = ethers.hashMessage(
     (JSON.stringify(session.user) + process.env.NEXT_AUTH_SEED) as string,
   );
-  const wallet = new ethers.Wallet(id(process.env.NEXT_AUTH_SEED as string));
-  const signedEmail = await wallet.signMessage(session.user.email);
 
-  res.status(200).json({ 
-    seed, 
-    email: session.user.email, 
-    signedEmail, 
-    userName: session.user.name || " " 
+  // if the provider is google, sign the email with the wallet to support the saas oauth protocol
+  let email, signedEmail
+  if (session.user.provider == "google") {
+    if (!session.user.email) return res.status(400).json({ error: "No email found" }); 
+    email = session.user.email;
+    const wallet = new ethers.Wallet(id(process.env.NEXT_AUTH_SEED as string));
+    signedEmail = await wallet.signMessage(session.user.email);
+  }
+
+  res.status(200).json({
+    seed,
+    email: session.user.email,
+    signedEmail,
+    userName: session.user.name || " ",
   });
 }
