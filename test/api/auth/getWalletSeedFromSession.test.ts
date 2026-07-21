@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ethers, id } from "ethers";
+import { ethers } from "ethers";
 
 vi.mock("next-auth/next", () => ({
   getServerSession: vi.fn(),
@@ -21,9 +21,16 @@ function createMockRes() {
   return res;
 }
 
-function expectedSeedFor(user: object) {
-  return ethers.hashMessage(JSON.stringify(user) + process.env.NEXT_AUTH_SEED);
-}
+// Golden vectors: fixed expected outputs for the NEXT_AUTH_SEED set in
+// vitest.setup.ts ("test-fixed-seed-for-ci"). Hardcoded rather than
+// re-derived so a change to the derivation algorithm fails the test
+// instead of silently tracking it. Regenerate only on a deliberate change.
+const GOOGLE_USER = { provider: "google", email: "alice@example.com", name: "Alice" };
+const GOOGLE_SEED = "0xcdcfbdd821feb1527aa0471f0b4d2249a8e5e9e067434e48e3cde9038ed6dba2";
+const GITHUB_USER = { provider: "github", email: "bob@example.com" };
+const GITHUB_SEED = "0xe5ad2d53729ba41c60974d41680a61db0803abd24aabb1e9035a79800e3afa2e";
+// Address of the service wallet derived from NEXT_AUTH_SEED (see getAddress).
+const SERVICE_ADDRESS = "0x69fF97680A5a75b4b5c9156778098641f46b008C";
 
 describe("getWalletSeedFromSession", () => {
   beforeEach(() => {
@@ -72,30 +79,30 @@ describe("getWalletSeedFromSession", () => {
   });
 
   it("signs the email for a google session and returns the derived seed", async () => {
-    const user = { provider: "google", email: "alice@example.com", name: "Alice" };
+    const user = GOOGLE_USER;
     vi.mocked(getServerSession).mockResolvedValue({ user } as any);
     const res = createMockRes();
 
     await handler({} as any, res);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.seed).toBe(expectedSeedFor(user));
+    expect(res.body.seed).toBe(GOOGLE_SEED);
     expect(res.body.email).toBe(user.email);
     expect(res.body.userName).toBe("Alice");
 
-    const signingWallet = new ethers.Wallet(id(process.env.NEXT_AUTH_SEED as string));
-    expect(ethers.verifyMessage(user.email, res.body.signedEmail)).toBe(signingWallet.address);
+    // The recovered signer must be the service wallet (fixed golden address).
+    expect(ethers.verifyMessage(user.email, res.body.signedEmail)).toBe(SERVICE_ADDRESS);
   });
 
   it("does not sign the email for a non-google session", async () => {
-    const user = { provider: "github", email: "bob@example.com" };
+    const user = GITHUB_USER;
     vi.mocked(getServerSession).mockResolvedValue({ user } as any);
     const res = createMockRes();
 
     await handler({} as any, res);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.seed).toBe(expectedSeedFor(user));
+    expect(res.body.seed).toBe(GITHUB_SEED);
     expect(res.body.signedEmail).toBeUndefined();
     expect(res.body.userName).toBe(" ");
   });
