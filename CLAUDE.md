@@ -14,8 +14,9 @@ The app is meant to be opened in a popup window: after the user confirms login, 
 - `yarn build` — production build
 - `yarn start` — start production server, `-p ${PORT:-8080}`, bound to `0.0.0.0`
 - `yarn lint` — `next lint`
+- `yarn test` — run the Vitest unit suite (single run, no watch)
 
-No test suite exists in this repo.
+Tests live under `test/api/**` (mirroring `src/pages/api/**`) rather than colocated in `src/pages`, since the Pages Router treats any file under `src/pages` as a route. Fixed dummy secrets for the suite are set in `vitest.setup.ts`.
 
 ## Environment variables
 
