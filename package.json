@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "prettier": "^3.0.0",
-    "vitest": "^3"
+    "vitest": "^4"
   },
   "resolutions": {
     "@babel/runtime": "^7.26.10",
